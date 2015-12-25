@@ -58,19 +58,51 @@ class Graph {
     /// Colors the graph with a breadth first search
     ///     Returns the number of colors used in the coloring
     func color() -> Int {
-        //TODO: Do this
         let queue: Queue = Queue()
-        queue.push(vertices[0])
-        while !queue.isEmpty() {
-            let currentVertex: Vertex = queue.pop()
-            for neighbor in currentVertex.adjacent {
-                if !neighbor.visited {
-                    queue.push(neighbor)
-                }
+        var colors: [Bool] = [Bool]()
+        colors.append(false)
+        // Make sure all unconnected components are traversed
+        for vertex in vertices {
+            if !vertex.visited {
+                vertex.color = 0
+                queue.push(vertex)
+            }
+            // BFS on the queue's current vertex
+            while !queue.isEmpty() {
+                colorVertex(queue.pop(), queue: queue, colors: &colors)
             }
         }
         
-        return 0
+        return colors.count
+    }
+    
+    /// Private helper method to color a vertex in the BFS of the color method
+    private func colorVertex(vertex: Vertex, queue: Queue, inout colors: [Bool]) {
+        vertex.visited = true
+        // Mark all colors as used that are the colors of the neighbors
+        for var i: Int = 0; i < colors.count; ++i {
+            colors[i] = false
+        }
+        for neighbor in vertex.adjacent {
+            if !neighbor.visited {
+                queue.push(neighbor)
+            }
+            if neighbor.color != Vertex.UNCOLORED {
+                colors[neighbor.color] = true
+            }
+        }
+        // Figure out the first unused color and color the current vertex
+        for var i: Int = 0; i < colors.count; ++i {
+            if colors[i] == false {
+                vertex.color = i
+                break
+            }
+            // A new color needs to be added
+            if i == colors.count - 1 {
+                colors.append(false)
+                vertex.color = colors.count - 1
+            }
+        }
     }
 }
 
@@ -102,58 +134,101 @@ class IntervalTree {
     var vertex: Vertex
     var left: IntervalTree?
     var right: IntervalTree?
+    var maxEnd: Int
     
     /// IntervalTree constructor
     init(vertex: Vertex) {
         self.vertex = vertex
+        self.maxEnd = vertex.trip.interval.end
     }
     
-    /// Checks to see if the vertices overlap and if so adds an edge between them
-    ///     Then recursively checks later vertices for an overlap and adds the vertex to the tree
-    func checkAndAdd(vertex: Vertex) {
-        //TODO: Do this
+    /// Adds edges between a given interval and all overlapping intervals in the tree
+    ///     Then adds the interval to the tree
+    func checkAndAdd(tree: IntervalTree) {
+        check(tree)
+        add(tree)
+    }
+    
+    /// Private helper method that checks for overlapping intervals and
+    private func check(tree: IntervalTree) {
+        let thisStart: Int = self.vertex.trip.interval.start //3
+        let thisEnd: Int = self.vertex.trip.interval.end //4
+        let thisMax: Int = self.maxEnd // 5
+        let newStart: Int = tree.vertex.trip.interval.start // 6
+        let newEnd: Int = tree.vertex.trip.interval.end //15
+        
+        // Found an overlap
+        if thisStart <= newEnd && newStart <= thisEnd {
+            tree.vertex.addEdge(vertex)
+            vertex.addEdge(tree.vertex)
+        }
+        
+        // New interval can only overlap in left substree
+        if newEnd < thisStart {
+            if let leftSubtree = left {
+                leftSubtree.check(tree)
+            }
+        }
+        // New interval does not overlap any in the tree
+        else if newStart > thisMax {
+            return
+        }
+        // New interval could still potentially overlap all intervals in tree
+        else {
+            if let leftSubtree = left {
+                leftSubtree.check(tree)
+            }
+            if let rightSubtree = right {
+                rightSubtree.check(tree)
+            }
+        }
+    }
+    
+    /// Private helper method that adds the interval to the tree
+    private func add(tree: IntervalTree) {
+        maxEnd = max(tree.vertex.trip.interval.end, maxEnd)
+        
+        // Interval should go in left subtree
+        if tree.vertex.trip.interval.start < vertex.trip.interval.start {
+            if let leftSubtree = left {
+                leftSubtree.add(tree)
+            }
+            else {
+                left = tree
+            }
+        }
+        // Interval should go in right subtree
+        else {
+            if let rightSubtree = right {
+                rightSubtree.add(tree)
+            }
+            else {
+                right = tree
+            }
+        }
     }
 }
 
-// Create a list of trips
-var trips: [Trip] = [Trip(interval: (3, 4)), Trip(interval: (1, 5)), Trip(interval: (6, 15)), Trip(interval: (7, 9))]
-
-// The sorting function for trips
-//func tripSorter(trip1: Trip, trip2: Trip) -> Bool {
-//    let start1: Int = trip1.interval.start
-//    let end1: Int = trip1.interval.end
-//    let start2: Int = trip2.interval.start
-//    let end2: Int = trip2.interval.end
-//    
-//    if start1 < start2 {
-//        return true
-//    }
-//    else if start1 > start2 {
-//        return false
-//    }
-//    else {
-//        if end1 < end2 {
-//            return true
-//        }
-//        else {
-//            return false
-//        }
-//    }
-//}
-
-//let sortedTrips: [Trip] = trips.sort(tripSorter)
+// Create a list of trips; Should have IDs [0, 1, 0, 2]; Should be 3 colored
+var trips: [Trip] = [
+    Trip(interval: (3, 4)),
+    Trip(interval: (1, 5)),
+    Trip(interval: (6, 15)),
+    Trip(interval: (2, 9))
+]
 
 // Create graph and interval tree and add in all trips as vertices
 var graph: Graph = Graph()
 var intervalTree: IntervalTree?
 var vertices: [Vertex] = [Vertex]()
+var someArr: [Int] = [Int]()
 for trip in trips {
     let nextVertex = graph.addVertex(trip)
     vertices.append(nextVertex)
     
     // Add to interval tree if the tree has been created, otherwise create it
-    if intervalTree != nil {
-        intervalTree?.checkAndAdd(nextVertex)
+    if let tree = intervalTree {
+        tree.checkAndAdd(IntervalTree(vertex: nextVertex))
     }
     else {
         intervalTree = IntervalTree(vertex: nextVertex)
