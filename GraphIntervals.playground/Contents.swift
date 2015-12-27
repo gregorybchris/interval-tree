@@ -144,37 +144,37 @@ class IntervalTree {
     }
     
     /// Adds edges between a given interval and all overlapping intervals in the tree
-    ///     Then adds the interval to the tree
+    ///     Then adds the new interval to the tree
     func checkAndAdd(tree: IntervalTree) {
         check(tree)
         add(tree)
-        
-        printTree(self)
-        print("\n")
     }
     
-    /// Prints out the binary tree (wrapper method)
+    /// Prints out the binary tree with an inorder traversal (wrapper method)
     private func printTree(tree: IntervalTree) {
         printTree(tree, level: 0)
+        print("\n\n\n")
     }
     
-    /// Prints out the binary tree
+    /// Prints out the binary tree with an inorder traversal (recursive method)
     private func printTree(tree: IntervalTree, level: Int) {
-        for _ in 0 ..< level {
-            print("\t\t", terminator:"")
-        }
-        print("(" + String(tree.vertex.trip.interval.start) + ", " + String(tree.vertex.trip.interval.end) + ")")
-        
         // Recurse on right subtree
         if let rightTree: IntervalTree = tree.right {
             printTree(rightTree, level: level + 1)
         }
         else {
             for _ in 0 ..< level + 1 {
-                print("\t\t", terminator:"")
+                print("\t\t\t", terminator:"")
             }
             print("nil")
         }
+        
+        // Print out the current tree value
+        for _ in 0 ..< level {
+            print("\t\t\t", terminator:"")
+        }
+        print("(" + String(tree.vertex.trip.interval.start) + ", " + String(tree.vertex.trip.interval.end) + ")" +
+            "(" + String(tree.maxEnd) + ")")
         
         // Recurse on left subtree
         if let leftTree: IntervalTree = tree.left {
@@ -182,7 +182,7 @@ class IntervalTree {
         }
         else {
             for _ in 0 ..< level + 1 {
-                print("\t\t", terminator:"")
+                print("\t\t\t", terminator:"")
             }
             print("nil")
         }
@@ -192,7 +192,7 @@ class IntervalTree {
     private func check(tree: IntervalTree) {
         let thisStart: Int = self.vertex.trip.interval.start
         let thisEnd: Int = self.vertex.trip.interval.end
-        let thisMax: Int = self.maxEnd // 5
+        let thisMax: Int = self.maxEnd
         let newStart: Int = tree.vertex.trip.interval.start
         let newEnd: Int = tree.vertex.trip.interval.end
         
@@ -280,24 +280,21 @@ class IntervalTree {
         }
     }
     
-//        y                  x
-//       / \                / \
-//      x   3              1   y
-//     / \                    / \
-//    1   2                  2   3
-    
     /// Performs a right rotation to balance the AVL interval tree
     private func rotateRight(y: IntervalTree) {
         if let x: IntervalTree = y.left {
+            // Switch data between main nodes to maintain parent reference
             let tempData: Vertex = y.vertex
             y.vertex = x.vertex
             x.vertex = tempData
             
+            // Do rotation by moving around tree references
             y.left = x.left
             x.left = x.right
             x.right = y.right
             y.right = x
             
+            // Recalculate the heights and interval tree data
             let t1Height: Int = y.left == nil ? 0 : y.left!.height
             let t2Height: Int = x.left == nil ? 0 : x.left!.height
             let t3Height: Int = x.right == nil ? 0 : x.right!.height
@@ -308,29 +305,26 @@ class IntervalTree {
             x.height = max(t2Height, t3Height) + 1
             y.height = max(t1Height, x.height) + 1
             
-            x.maxEnd = max(t2MaxEnd, t3MaxEnd) + 1
-            y.maxEnd = max(t1MaxEnd, x.maxEnd) + 1
+            x.maxEnd = max(max(t2MaxEnd, t3MaxEnd), x.vertex.trip.interval.end)
+            y.maxEnd = max(max(t1MaxEnd, x.maxEnd), y.vertex.trip.interval.end)
         }
     }
 
-//        y                  x
-//       / \                / \
-//      x   3              1   y
-//     / \                    / \
-//    1   2                  2   3
-    
     /// Performs a left rotation to balance the AVL interval tree
     private func rotateLeft(x: IntervalTree) {
         if let y: IntervalTree = x.right {
+            // Switch data between main nodes to maintain parent reference
             let tempData: Vertex = x.vertex
             x.vertex = y.vertex
             y.vertex = tempData
             
+            // Do rotation by moving around tree references
             x.right = y.right
             y.right = y.left
             y.left = x.left
             x.left = y
             
+            // Recalculate the heights and interval tree data
             let t1Height: Int = y.left == nil ? 0 : y.left!.height
             let t2Height: Int = y.right == nil ? 0 : y.right!.height
             let t3Height: Int = x.right == nil ? 0 : x.right!.height
@@ -341,26 +335,26 @@ class IntervalTree {
             y.height = max(t1Height, t2Height) + 1
             x.height = max(y.height, t3Height) + 1
             
-            y.maxEnd = max(t1MaxEnd, t2MaxEnd) + 1
-            x.maxEnd = max(y.maxEnd, t3MaxEnd) + 1
+            y.maxEnd = max(max(t1MaxEnd, t2MaxEnd), y.vertex.trip.interval.end)
+            x.maxEnd = max(max(y.maxEnd, t3MaxEnd), x.vertex.trip.interval.end)
         }
     }
 }
 
-// Create a list of trips
+// Create a list of trips (input)
 var trips: [Trip] = [
     Trip(interval: (1, 3)),
     Trip(interval: (17, 20)),
     Trip(interval: (1, 5)),
     Trip(interval: (5, 7)),
-    Trip(interval: (17, 19))
-//    Trip(interval: (5, 9)),
-//    Trip(interval: (15, 17)),
-//    Trip(interval: (1, 3)),
-//    Trip(interval: (9, 13)),
-//    Trip(interval: (10, 12))
+    Trip(interval: (17, 19)),
+    Trip(interval: (5, 9)),
+    Trip(interval: (15, 17)),
+    Trip(interval: (1, 3)),
+    Trip(interval: (9, 13)),
+    Trip(interval: (10, 12))
 ]
-// [0, 0, 1, 0, 1, 2, 2, 2, 0, 1]
+// Expected output: [0, 0, 1, 0, 1, 2, 2, 2, 0, 1]
 
 // Create graph and interval tree and add in all trips as vertices
 var graph: Graph = Graph()
