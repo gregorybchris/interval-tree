@@ -1,6 +1,12 @@
 # iosome
 
-Algorithms implemented in Swift to test some ideas out that I learned in my algorithms class while getting better at Swift
+Some projects to practice what I learned in my algorithms class while practicing Swift
+
+## LCS
+
+An implementation of the longest common subsequence problem
+
+Also includes an efficient implementation of the length of the LCS as well as longest increasing subsequence in one string (LIS)
 
 ## GraphIntervals
 
