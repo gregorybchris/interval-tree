@@ -1,12 +1,6 @@
-# iosome
+# Interval Tree
 
-Some projects to practice what I learned in my algorithms class while practicing Swift
-
-## LCS
-
-An implementation of the longest common subsequence problem
-
-Also includes an efficient implementation of the length of the LCS as well as longest increasing subsequence in one string (LIS)
+I created this repo to practice what I learned in my college algorithms class and learn Swift at the same time. Here you'll find an implementation of interval trees as well as longest common subsequence.
 
 ## GraphIntervals
 
@@ -24,3 +18,9 @@ You own a small business that supplies gondola rides to tourists. Unfortunately,
 The total number of colors used is the number of operational gondolas needed
 
 A vertex color (mapped to a trip interval) represents the ID of the boat that can be used for that trip
+
+## LCS
+
+An implementation of the longest common subsequence problem
+
+Also includes an efficient implementation of the length of the LCS as well as longest increasing subsequence in one string (LIS)
