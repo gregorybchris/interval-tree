@@ -1,26 +1,14 @@
 # Interval Tree
 
-I created this repo to practice what I learned in my college algorithms class and learn Swift at the same time. Here you'll find an implementation of interval trees as well as longest common subsequence.
+## Problem
 
-## GraphIntervals
+You own a small business that supplies gondola rides to tourists. Unfortunately, because of the reckless nature of tourists in your area, you find yourself constantly making repairs on your gondolas. Some days your fleet is drastically diminished and you worry about not having enough operational gondolas to accommodate your customers. However, you do know the start and end times for all trips on a given day. You figure there must be a way to determine the minimum number of boats you need to get through a day without delays.
 
-### Problem:
+## My Solution
 
-You own a small business that supplies gondola rides to tourists. Unfortunately, because of the reckless nature of tourists in your area, you find yourself constantly making repairs on your gondolas. Some days your fleet is drastically diminished and you worry about not having enough operational gondolas to accommodate your customers. However, you do know the start and end times for all of the trips for any given day. You figure there must be a way to determine the minimum number of boats you need to get through a day without delays.
+1. Take as input a list of time intervals representing the start and end times for gondola trips on a given day.
+2. Determine overlap between trips efficiently by inserting each interval into an interval tree (AVL tree).
+3. Construct a graph where trips are represented by vertices and overlap between two trips is represented as an edge between two vertices.
+4. Color the graph vertices such that no two adjacent vertices have the same color using as few colors as possible.
 
-### My Solution:
-
-1. Take in the list of intervals representing the start and end times for trips on a certain day.
-2. Create a graph where a vertex is an trip with a start and end time and an edge between two vertices represents an overlap in two trips on gondolas
-3. Add each vertex to an interval tree (AVL tree) and add edges between graph vertices as overlaps occur in the interval tree
-4. Color the graph such that no two adjacent vertices have the same color
-
-The total number of colors used is the number of operational gondolas needed
-
-A vertex color (mapped to a trip interval) represents the ID of the boat that can be used for that trip
-
-## LCS
-
-An implementation of the longest common subsequence problem
-
-Also includes an efficient implementation of the length of the LCS as well as longest increasing subsequence in one string (LIS)
+The total number of colors used is the number of operational gondolas needed and the vertex color can be used to select the boat for that trip.
